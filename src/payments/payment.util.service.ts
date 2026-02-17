@@ -19,7 +19,7 @@ export class PaymentUtilService {
         }
         const checkout = await this.zarinPalService.checkoutPayment(
           payment.id,{
-          amount: payment.amount,
+          amount: Number(payment.amount),
           currency: 'IRR',
           description: '',
           callback_url: `${process.env.BASE_URL}/payments/verify`,
@@ -34,7 +34,7 @@ export class PaymentUtilService {
         }
         let result = {};
           
-        if (status == '100') {
+        if (status == 'OK') {
   
           try {
             const verify = await this.zarinPalService.verify(refId);
@@ -54,6 +54,7 @@ export class PaymentUtilService {
                 }
               ));
             }
+            // show success page
   
           } catch(e) {
             console.log(e);
@@ -66,6 +67,7 @@ export class PaymentUtilService {
               status: PaymentStatusEnum.FAILED,
             }
           ));
+          // show failed page
         }
         
         return result;

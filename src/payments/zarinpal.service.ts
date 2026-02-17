@@ -30,7 +30,6 @@ export class ZarinPalService {
               callback_url: inputs.callback_url,
               description: 'Transaction description.',
             };
-      
             const response = await axios.post(`${this.zarinPalUrl}/pg/v4/payment/request.json`, body, {
               headers: {
                 'Content-Type': 'application/json',
@@ -39,7 +38,7 @@ export class ZarinPalService {
             });
 
             if (response.data.data.code === 100) {
-                result = await this.paymentService.save(Object.assign(payment, {checkoutUrl: `${process.env.ZARINPAL_URL}/pg/StartPay/response.data.data['authority']/`, refId: response.data.data['authority']}))
+                result = await this.paymentService.save(Object.assign(payment, {checkoutUrl: `${process.env.ZARINPAL_URL}/pg/StartPay/${response.data.data['authority']}/`, refId: response.data.data['authority']}))
             }
             return result;
 
@@ -58,11 +57,10 @@ export class ZarinPalService {
 
         const response = await axios.post(`${this.zarinPalUrl}/pg/v4/payment/verify.json`, {
             merchant_id: this.merchantId,
-            amount: payment.amount,
+            amount: Number(payment.amount),
             authority: payment.refId,
         });
-
-        if (response.data.data.code == '100') {
+        if (response.data.data.code == 100) {
             return true
         } else {
             return false
