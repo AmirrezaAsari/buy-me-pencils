@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BaseRepository } from '../database/base.repository';
@@ -8,6 +8,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService extends BaseRepository<User> {
+  private readonly logger = new Logger(UsersService.name);
+
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
@@ -16,11 +18,13 @@ export class UsersService extends BaseRepository<User> {
   }
 
   async createAdmin(createUserDto: CreateUserDto): Promise<User> {
+    this.logger.log(`Attempting to create admin user with email=${createUserDto.email}`);
     const existingAdmin = await this.usersRepository.findOne({
       where: { type: 'admin' },
     });
 
     if (existingAdmin) {
+      this.logger.warn('Admin user creation attempted but admin already exists');
       throw new ForbiddenException('Admin user already exists');
     }
 
@@ -29,7 +33,9 @@ export class UsersService extends BaseRepository<User> {
       type: 'admin',
     });
 
-    return this.usersRepository.save(user);
+    const saved = await this.usersRepository.save(user);
+    this.logger.log(`Admin user created with id=${saved.id}`);
+    return saved;
   }
 
   async updateUser(id: number, updateUserDto: UpdateUserDto): Promise<User> {

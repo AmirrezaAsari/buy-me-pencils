@@ -1,0 +1,11 @@
+{
+  "users": {
+    "admin_already_exists": "Admin user already exists",
+    "not_found": "User not found"
+  },
+  "auth": {
+    "invalid_credentials": "Invalid email or password",
+    "invalid_setup_token": "Invalid admin setup token"
+  }
+}
+

@@ -3,7 +3,8 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ADMIN_SETUP_TOKEN } from '../config/admin.config';
-import { User } from '../users/user.entity';
+import { User } from '../users/user.entity'
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -22,9 +23,11 @@ export class AuthService {
 
   async validateUser(email: string, password: string): Promise<User> {
     const user = await this.usersRepository.findOne({ where: { email } });
-    if (!user || user.password !== password) {
+  
+    if (!user || !(await bcrypt.compare(password, user.password))) {
       throw new UnauthorizedException('Invalid credentials');
     }
+  
     return user;
   }
 
