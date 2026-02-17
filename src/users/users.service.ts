@@ -1,5 +1,4 @@
 import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
-import { I18nService } from 'nestjs-i18n';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BaseRepository } from '../database/base.repository';
@@ -14,7 +13,6 @@ export class UsersService extends BaseRepository<User> {
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
-    private readonly i18n: I18nService,
   ) {
     super(usersRepository);
   }
@@ -27,8 +25,7 @@ export class UsersService extends BaseRepository<User> {
 
     if (existingAdmin) {
       this.logger.warn('Admin user creation attempted but admin already exists');
-      const message = await this.i18n.translate('errors.users.admin_already_exists');
-      throw new ForbiddenException(message);
+      throw new ForbiddenException('Admin user already exists');
     }
 
     const user = this.usersRepository.create({
@@ -45,8 +42,7 @@ export class UsersService extends BaseRepository<User> {
     const user = await this.findById(id);
 
     if (!user) {
-      const message = await this.i18n.translate('errors.users.not_found');
-      throw new ForbiddenException(message);
+      throw new ForbiddenException('User not found');
     }
 
     Object.assign(user, updateUserDto);
