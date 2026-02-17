@@ -1,4 +1,5 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
+import { I18nService } from 'nestjs-i18n';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BaseRepository } from '../database/base.repository';
@@ -8,20 +9,26 @@ import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService extends BaseRepository<User> {
+  private readonly logger = new Logger(UsersService.name);
+
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
+    private readonly i18n: I18nService,
   ) {
     super(usersRepository);
   }
 
   async createAdmin(createUserDto: CreateUserDto): Promise<User> {
+    this.logger.log(`Attempting to create admin user with email=${createUserDto.email}`);
     const existingAdmin = await this.usersRepository.findOne({
       where: { type: 'admin' },
     });
 
     if (existingAdmin) {
-      throw new ForbiddenException('Admin user already exists');
+      this.logger.warn('Admin user creation attempted but admin already exists');
+      const message = await this.i18n.translate('errors.users.admin_already_exists');
+      throw new ForbiddenException(message);
     }
 
     const user = this.usersRepository.create({
@@ -29,14 +36,17 @@ export class UsersService extends BaseRepository<User> {
       type: 'admin',
     });
 
-    return this.usersRepository.save(user);
+    const saved = await this.usersRepository.save(user);
+    this.logger.log(`Admin user created with id=${saved.id}`);
+    return saved;
   }
 
   async updateUser(id: number, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.findById(id);
 
     if (!user) {
-      throw new ForbiddenException('User not found');
+      const message = await this.i18n.translate('errors.users.not_found');
+      throw new ForbiddenException(message);
     }
 
     Object.assign(user, updateUserDto);

@@ -1,4 +1,5 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { I18nService } from 'nestjs-i18n';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -11,6 +12,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
+    private readonly i18n: I18nService,
   ) {}
 
   validateAdminSetupToken(token: string | undefined | null): boolean {
@@ -23,7 +25,10 @@ export class AuthService {
   async validateUser(email: string, password: string): Promise<User> {
     const user = await this.usersRepository.findOne({ where: { email } });
     if (!user || user.password !== password) {
-      throw new UnauthorizedException('Invalid credentials');
+      const message = await this.i18n.translate(
+        'errors.auth.invalid_credentials',
+      );
+      throw new UnauthorizedException(message);
     }
     return user;
   }
