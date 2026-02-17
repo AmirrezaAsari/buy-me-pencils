@@ -98,6 +98,13 @@ export abstract class BaseRepository<TEntity extends ObjectLiteral> {
     return this.repository.save(entity);
   }
 
+  // Soft delete: set deletedAt timestamp and persist
+  async delete(entity: TEntity): Promise<void> {
+    (entity as any).deletedAt = new Date();
+    await this.repository.save(entity as any);
+  }
+
+  // Hard delete: physically remove row
   async remove(entity: TEntity): Promise<void> {
     await this.repository.remove(entity as any);
   }
