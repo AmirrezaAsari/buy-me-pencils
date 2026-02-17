@@ -1,7 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import axios from 'axios';
-import { error } from 'console';
 
 @Injectable()
 export class ZarinPalService {

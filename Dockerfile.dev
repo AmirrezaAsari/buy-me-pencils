@@ -3,19 +3,25 @@ FROM node:22-alpine
 
 WORKDIR /usr/src/app
 
+# Install build tools needed for native modules (like bcrypt)
+RUN apk add --no-cache make gcc g++ python3
+
 # Install global dev tools
 RUN npm install -g @nestjs/cli ts-node-dev
 
-# Copy package files first for caching
+# Copy package.json / package-lock.json first for caching
 COPY package*.json ./
 
-# Install dependencies including dev
+# Install all dependencies (including devDependencies)
 RUN npm install
 
-# Copy all code
+# Copy all source code
 COPY . .
 
-# Expose dev port
+# Rebuild bcrypt for Alpine (fixes Exec format error)
+RUN npm rebuild bcrypt --build-from-source
+
+# Expose NestJS dev port
 EXPOSE 3002
 
 # Run NestJS in dev mode with watch
