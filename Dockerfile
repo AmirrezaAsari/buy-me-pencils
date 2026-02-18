@@ -18,9 +18,7 @@ COPY --from=builder /usr/src/app/package*.json ./
 RUN npm install --omit=dev
 
 COPY --from=builder /usr/src/app/dist ./dist
-COPY --from=builder /usr/src/app/.env ./.env
 
 EXPOSE 3002
 
 CMD ["node", "dist/main.js"]
-

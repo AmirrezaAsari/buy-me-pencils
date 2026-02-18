@@ -10,6 +10,11 @@ async function bootstrap() {
   const logger = new Logger('Bootstrap');
   const port = process.env.PORT ?? 3002;
 
+  app.enableCors({
+    origin: ['http://localhost:3000'], // frontend URl
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  });
+
   await app.listen(port);
   logger.log(`Application started on port ${port}`);
 }
