@@ -1,0 +1,55 @@
+name: Backend CI/CD
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout backend repo
+        uses: actions/checkout@v3
+
+      - name: Build Docker image
+        run: |
+          docker build -t backend-ci .
+
+      - name: Verify container runs
+        run: docker run --rm backend-ci node -v
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy backend via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            set -e
+
+            # Go to backend folder
+            cd /home/ubuntu/buy-me-pencils/backend
+
+            # Clone repo if missing
+            if [ ! -d ".git" ]; then
+              rm -rf /home/ubuntu/buy-me-pencils/backend
+              git clone https://github.com/AmirrezaAsari/buy-me-pencils-backend.git backend
+              cd backend
+            fi
+
+            # Sync with GitHub
+            git fetch --all
+            git reset --hard origin/master
+            git clean -fd
+
+            # Rebuild backend service
+            docker-compose build backend
+            docker-compose up -d backend
