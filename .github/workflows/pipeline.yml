@@ -50,7 +50,7 @@ jobs:
 
             # Sync with GitHub
             git fetch --all
-            git reset --hard origin/master
+            git reset --hard origin/dev
             git clean -fd
 
             # Rebuild backend service
