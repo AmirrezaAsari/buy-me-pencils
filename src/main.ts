@@ -11,7 +11,7 @@ async function bootstrap() {
   const port = process.env.PORT ?? 3002;
 
   app.enableCors({
-    origin: ['http://localhost:3000'], // frontend URl
+    origin: ['http://localhost:3000', 'http://buymeapencil.ir', 'https://buymeapencil.ir' ], // frontend URl
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   });
 
