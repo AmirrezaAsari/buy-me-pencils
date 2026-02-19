@@ -55,4 +55,5 @@ jobs:
 
             # Rebuild backend service
             docker-compose build backend
+            docker-compose down
             docker-compose up -d backend
