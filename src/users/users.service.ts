@@ -1,6 +1,7 @@
 import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 import { BaseRepository } from '../database/base.repository';
 import { User } from './user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -28,8 +29,11 @@ export class UsersService extends BaseRepository<User> {
       throw new ForbiddenException('Admin user already exists');
     }
 
+    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
     const user = this.usersRepository.create({
-      ...createUserDto,
+      name: createUserDto.name,
+      email: createUserDto.email,
+      password: hashedPassword,
       type: 'admin',
     });
 
@@ -38,14 +42,22 @@ export class UsersService extends BaseRepository<User> {
     return saved;
   }
 
-  async updateUser(id: number, updateUserDto: UpdateUserDto): Promise<User> {
+  async findByEmail(email: string): Promise<User | null> {
+    return this.usersRepository.findOne({ where: { email } });
+  }
+
+  async updateUser(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.findById(id);
 
     if (!user) {
       throw new ForbiddenException('User not found');
     }
 
-    Object.assign(user, updateUserDto);
+    const updates: Partial<User> = { ...updateUserDto };
+    if (updateUserDto.password) {
+      updates.password = await bcrypt.hash(updateUserDto.password, 10);
+    }
+    Object.assign(user, updates);
     return this.usersRepository.save(user);
   }
 }
