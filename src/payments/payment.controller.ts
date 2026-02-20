@@ -19,7 +19,9 @@ export class PaymentController {
         const payment = await this.paymentUtilService.checkout(inputs);
         return {
             message: 'payment successull.',
-            data: payment,
+            data: {
+                checkoutUrl: 'https://daramet.com/ItsRootKid'
+            },
         }
     }
 
