@@ -34,7 +34,10 @@ export class UserGuard implements CanActivate {
       }
       (request as Request & { user: unknown }).user = user;
       return true;
-    } catch {
+    } catch (err) {
+      if (err instanceof UnauthorizedException) {
+        throw err;
+      }
       throw new UnauthorizedException('Invalid or expired token');
     }
   }
