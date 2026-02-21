@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignInDto } from './dto/sign-in.dto';
 import { SignUpRequestOtpDto } from './dto/sign-up-request-otp.dto';
@@ -10,10 +10,15 @@ import {
 import { UserGuard } from './guards/user.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { User } from '../users/user.entity';
+import { UsersService } from '../users/users.service';
+import { UpdateUserDto } from '../users/dto/update-user.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly usersService: UsersService,
+  ) {}
 
   @Post('sign-in')
   async signIn(@Body() body: SignInDto) {
@@ -60,5 +65,14 @@ export class AuthController {
       type: user.type,
       cryptoBalance: user.cryptoBalance ?? '0',
     };
+  }
+
+  @Patch('profile')
+  @UseGuards(UserGuard)
+  async updateProfile(
+    @CurrentUser() user: User,
+    @Body() body: UpdateUserDto,
+  ) {
+    return this.usersService.updateUser(user.id, body);
   }
 }

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthService } from './auth.service';
@@ -7,11 +7,13 @@ import { User } from '../users/user.entity';
 import { Otp } from './entities/otp.entity';
 import { MailModule } from '../mail/mail.module';
 import { UserGuard } from './guards/user.guard';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, Otp]),
     MailModule,
+    forwardRef(() => UsersModule),
     JwtModule.register({
       secret: process.env.JWT_SECRET ?? 'change-this-jwt-secret',
       signOptions: { expiresIn: '1h' },
