@@ -18,9 +18,13 @@ export class MailService {
       this.transporter = nodemailer.createTransport({
         host,
         port,
-        secure: port === 465,
+        secure: false,
         auth: { user, pass },
-      });
+        requireTLS: true,
+        tls: {
+          rejectUnauthorized: false,
+        },
+      } as nodemailer.TransportOptions);
       this.logger.log('Mail service initialized with SMTP');
     } else {
       this.logger.warn(
