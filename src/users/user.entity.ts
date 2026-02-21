@@ -31,5 +31,9 @@ export class User {
 
   @Column({ type: 'timestamp', nullable: true })
   deletedAt: Date | null;
+
+  /** USDT balance from confirmed crypto donations (for creators) */
+  @Column({ type: 'decimal', precision: 24, scale: 6, default: '0', nullable: true })
+  cryptoBalance?: string;
 }
 
