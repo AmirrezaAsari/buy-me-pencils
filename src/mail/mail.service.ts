@@ -20,10 +20,10 @@ export class MailService {
         port,
         secure: false,
         auth: { user, pass },
-        requireTLS: true,
-        tls: {
-          rejectUnauthorized: false,
-        },
+        family: 4,
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 10000,
       } as nodemailer.TransportOptions);
       this.logger.log('Mail service initialized with SMTP');
     } else {
