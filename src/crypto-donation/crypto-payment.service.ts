@@ -3,6 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CryptoPayment } from './entities/crypto-payment.entity';
 import { CryptoTransaction } from './entities/crypto-transaction.entity';
+import {
+  UserBalanceRecord,
+  BalanceChangeType,
+} from './entities/user-balance-record.entity';
 import { CryptoPaymentStatus } from './entities/crypto-payment-status.enum';
 import { User } from '../users/user.entity';
 import { WalletService } from '../wallet/wallet.service';
@@ -24,6 +28,8 @@ export class CryptoPaymentService {
     private readonly paymentRepo: Repository<CryptoPayment>,
     @InjectRepository(CryptoTransaction)
     private readonly txRepo: Repository<CryptoTransaction>,
+    @InjectRepository(UserBalanceRecord)
+    private readonly balanceRecordRepo: Repository<UserBalanceRecord>,
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
     private readonly walletService: WalletService,
@@ -133,7 +139,7 @@ export class CryptoPaymentService {
       confirmations,
     });
 
-    // Increase creator balance
+    // Increase creator balance and record it
     const creator = payment.creator as User;
     if (creator) {
       const currentBalance = parseFloat(creator.cryptoBalance || '0');
@@ -143,6 +149,14 @@ export class CryptoPaymentService {
         { id: payment.creatorId },
         { cryptoBalance: newBalance },
       );
+      await this.balanceRecordRepo.save({
+        userId: payment.creatorId,
+        amount: BlockchainService.rawToUsdt(amount),
+        balanceAfter: newBalance,
+        type: BalanceChangeType.CREDIT,
+        referenceType: 'crypto_payment',
+        referenceId: payment.id,
+      });
     }
 
     this.logger.log(
@@ -169,5 +183,18 @@ export class CryptoPaymentService {
    */
   async findById(id: string): Promise<CryptoPayment | null> {
     return this.paymentRepo.findOne({ where: { id } });
+  }
+
+  /**
+   * Get confirmed payments for a creator (for display in user panel).
+   */
+  async findConfirmedByCreator(creatorId: string): Promise<CryptoPayment[]> {
+    return this.paymentRepo.find({
+      where: {
+        creatorId,
+        status: CryptoPaymentStatus.CONFIRMED,
+      },
+      order: { createdAt: 'DESC' },
+    });
   }
 }
