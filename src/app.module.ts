@@ -15,6 +15,9 @@ import { WalletModule } from './wallet/wallet.module';
 import { BlockchainModule } from './blockchain/blockchain.module';
 import { SweepModule } from './sweep/sweep.module';
 import { WorkerModule } from './worker/worker.module';
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 import { UsersController } from './users/users.controller';
 import { PaymentController } from './payments/payment.controller';
@@ -22,9 +25,12 @@ import { AuthController } from './auth/auth.controller';
 
 @Module({
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   imports: [DatabaseModule, AuthModule, UsersModule, PaymentsModule],
   controllers: [AppController, UsersController, PaymentController, AuthController],
 =======
+=======
+>>>>>>> Stashed changes
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     DatabaseModule,
@@ -45,6 +51,9 @@ import { AuthController } from './auth/auth.controller';
     PaymentController,
     AuthController,
   ],
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
   providers: [AppService],
 })
