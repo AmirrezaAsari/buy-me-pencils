@@ -13,7 +13,6 @@ import { WalletModule } from './wallet/wallet.module';
 import { BlockchainModule } from './blockchain/blockchain.module';
 import { SweepModule } from './sweep/sweep.module';
 import { WorkerModule } from './worker/worker.module';
-import { CardInfoModule } from './card-info/card-info.module';
 import { UsersController } from './users/users.controller';
 import { PaymentController } from './payments/payment.controller';
 import { AuthController } from './auth/auth.controller';
