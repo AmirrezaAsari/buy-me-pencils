@@ -1,12 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { UsersService } from '../users/users.service';
 import { UserGuard } from './guards/user.guard';
 import { User } from '../users/user.entity';
 
 describe('AuthController', () => {
   let controller: AuthController;
   let authService: jest.Mocked<AuthService>;
+  let usersService: jest.Mocked<UsersService>;
 
   const mockUser: User = {
     id: 'user-uuid',
@@ -35,10 +37,16 @@ describe('AuthController', () => {
         message: 'Password has been reset successfully',
       }),
     };
+    const mockUsersService = {
+      updateUser: jest.fn().mockResolvedValue(mockUser),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController],
-      providers: [{ provide: AuthService, useValue: mockAuthService }],
+      providers: [
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: UsersService, useValue: mockUsersService },
+      ],
     })
       .overrideGuard(UserGuard)
       .useValue({ canActivate: () => true })
@@ -46,6 +54,7 @@ describe('AuthController', () => {
 
     controller = module.get<AuthController>(AuthController);
     authService = module.get(AuthService);
+    usersService = module.get(UsersService);
   });
 
   describe('signIn', () => {
