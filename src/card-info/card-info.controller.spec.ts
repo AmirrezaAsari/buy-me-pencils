@@ -2,16 +2,29 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CardInfoController } from './card-info.controller';
 import { CardInfoService } from './card-info.service';
 import { CardInfo } from './card-info.entity';
+import { User } from '../users/user.entity';
 import { UserGuard } from '../auth/guards/user.guard';
 
 describe('CardInfoController', () => {
   let controller: CardInfoController;
   let cardInfoService: jest.Mocked<CardInfoService>;
 
+  const mockUser: User = {
+    id: 'user-1',
+    name: 'Test',
+    email: 'test@test.com',
+    type: 'user',
+    password: 'hash',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    deletedAt: null,
+  };
+
   const mockCardInfo: CardInfo = {
     id: 'uuid-card-1',
     cardNumber: '1234567890123456',
     holderName: 'John Doe',
+    userId: mockUser.id,
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -19,8 +32,9 @@ describe('CardInfoController', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
     const mockCardInfoService = {
+      findForUser: jest.fn().mockResolvedValue([mockCardInfo]),
       createCardInfo: jest.fn().mockResolvedValue(mockCardInfo),
-      findAll: jest.fn().mockResolvedValue([mockCardInfo]),
+      updateCardInfo: jest.fn().mockResolvedValue(mockCardInfo),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -35,26 +49,40 @@ describe('CardInfoController', () => {
     cardInfoService = module.get(CardInfoService);
   });
 
+  describe('findForUser', () => {
+    it('calls cardInfoService.findForUser with user id and returns list', async () => {
+      const result = await controller.findForUser(mockUser);
+
+      expect(cardInfoService.findForUser).toHaveBeenCalledWith(mockUser.id);
+      expect(result).toEqual([mockCardInfo]);
+    });
+  });
+
   describe('create', () => {
     const dto = {
       cardNumber: '1234567890123456',
       holderName: 'John Doe',
     };
 
-    it('calls cardInfoService.createCardInfo and returns created card info', async () => {
-      const result = await controller.create(dto);
+    it('calls cardInfoService.createCardInfo with user id and dto', async () => {
+      const result = await controller.create(mockUser, dto);
 
-      expect(cardInfoService.createCardInfo).toHaveBeenCalledWith(dto);
+      expect(cardInfoService.createCardInfo).toHaveBeenCalledWith(mockUser.id, dto);
       expect(result).toEqual(mockCardInfo);
     });
   });
 
-  describe('findAll', () => {
-    it('calls cardInfoService.findAll and returns all card info', async () => {
-      const result = await controller.findAll();
+  describe('update', () => {
+    it('calls cardInfoService.updateCardInfo with user id, card id and body', async () => {
+      const body = { holderName: 'Jane Doe' };
+      const result = await controller.update(mockUser, 'uuid-card-1', body);
 
-      expect(cardInfoService.findAll).toHaveBeenCalled();
-      expect(result).toEqual([mockCardInfo]);
+      expect(cardInfoService.updateCardInfo).toHaveBeenCalledWith(
+        'uuid-card-1',
+        mockUser.id,
+        body,
+      );
+      expect(result).toEqual(mockCardInfo);
     });
   });
 });
