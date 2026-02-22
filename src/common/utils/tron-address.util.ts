@@ -9,5 +9,5 @@ export function isValidTronAddress(address: string): boolean {
   const trimmed = address.trim();
   if (trimmed.length !== 34) return false;
   // TronWeb validates base58 and checksum
-  return TronWeb.isAddress(trimmed);
+  return TronWeb.utils.address.isAddress(trimmed);
 }

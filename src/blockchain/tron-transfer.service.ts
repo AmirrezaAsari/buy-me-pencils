@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import TronWeb from 'tronweb';
+import { TronWeb } from 'tronweb';
 import { BlockchainService } from './blockchain.service';
 
 /** Default USDT TRC20 contract on mainnet */
