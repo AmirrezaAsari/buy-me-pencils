@@ -52,8 +52,10 @@ export class PaymentMonitorWorker {
     if (pending.length === 0) return;
 
     const latestBlock = await this.blockchainService.getLatestBlockNumber();
-
+    this.logger.debug(`Latest block: ${latestBlock}`);
+    this.logger.debug(`Pending payments: ${pending.length}`);
     for (const payment of pending) {
+      this.logger.debug(`Processing payment ${payment.id}`);
       try {
         await this.processOnePayment(payment, latestBlock);
       } catch (err) {
@@ -77,6 +79,7 @@ export class PaymentMonitorWorker {
     );
 
     if (transfers.length === 0) return;
+    this.logger.debug(`Found ${transfers.length} transfers for payment ${payment.id}`, transfers);
 
     // Find transfer that matches: toAddress, amount >= expected
     const expectedRaw = BigInt(payment.amountExpected);

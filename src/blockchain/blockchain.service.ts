@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios, { AxiosInstance } from 'axios';
 
@@ -34,6 +34,8 @@ export interface TransactionInfo {
 @Injectable()
 export class BlockchainService {
   private readonly http: AxiosInstance;
+  private readonly logger = new Logger(BlockchainService.name);
+
   private readonly baseUrl: string;
 
   constructor(private readonly configService: ConfigService) {
@@ -125,6 +127,7 @@ export class BlockchainService {
       block_header?: { raw_data?: { number?: number } };
       number?: number;
     }>(url);
+    this.logger.debug(data);
     return (
       data?.block_header?.raw_data?.number ??
       (data as any)?.number ??
