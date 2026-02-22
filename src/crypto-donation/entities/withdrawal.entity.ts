@@ -10,8 +10,8 @@ import { User } from '../../users/user.entity';
 import { WithdrawalStatus } from './withdrawal-status.enum';
 
 /**
- * Creator withdrawal request (basic structure).
- * Creator requests to move balance to external wallet.
+ * Creator withdrawal request.
+ * Creator requests to move balance to external TRON wallet (USDT TRC20).
  */
 @Entity('withdrawals')
 export class Withdrawal {
@@ -39,6 +39,18 @@ export class Withdrawal {
   })
   status: WithdrawalStatus;
 
+  /** TRON transaction hash after successful transfer */
+  @Column({ type: 'varchar', length: 128, nullable: true })
+  txHash: string | null;
+
+  /** Error or rejection reason when status is failed/rejected */
+  @Column({ type: 'varchar', length: 512, nullable: true })
+  failureReason: string | null;
+
   @CreateDateColumn()
   createdAt: Date;
+
+  /** When withdrawal was completed or failed (blockchain finalized) */
+  @Column({ type: 'timestamp', nullable: true })
+  processedAt: Date | null;
 }

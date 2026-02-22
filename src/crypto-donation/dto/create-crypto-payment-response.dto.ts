@@ -16,6 +16,9 @@ export class CreateCryptoPaymentResponseDto {
   @ApiProperty({ example: 'USDT' })
   currency: string;
 
+  @ApiProperty({ example: 'TRON (TRC20)', description: 'Network / chain for the payment' })
+  network: string;
+
   @ApiProperty({ description: 'ISO timestamp when payment expires' })
   expiresAt: string;
 }

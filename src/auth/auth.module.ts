@@ -7,6 +7,7 @@ import { User } from '../users/user.entity';
 import { Otp } from './entities/otp.entity';
 import { MailModule } from '../mail/mail.module';
 import { UserGuard } from './guards/user.guard';
+import { AdminGuard } from './guards/admin.guard';
 import { UsersModule } from '../users/users.module';
 
 @Module({
@@ -20,7 +21,7 @@ import { UsersModule } from '../users/users.module';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, UserGuard],
-  exports: [AuthService, UserGuard, JwtModule],
+  providers: [AuthService, UserGuard, AdminGuard],
+  exports: [AuthService, UserGuard, AdminGuard, JwtModule],
 })
 export class AuthModule {}

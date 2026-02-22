@@ -1,8 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
+import { validateEnvOnStartup } from './common/env.validation';
 
 async function bootstrap() {
+  validateEnvOnStartup();
+
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
   });
