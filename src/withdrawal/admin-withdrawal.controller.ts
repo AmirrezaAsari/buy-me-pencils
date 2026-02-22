@@ -1,6 +1,6 @@
 import {
-  Body,
   Controller,
+  Get,
   Param,
   Patch,
   UseGuards,
@@ -16,6 +16,7 @@ import {
   WITHDRAWAL_QUEUE_NAME,
   WithdrawalJobPayload,
 } from './withdrawal.processor';
+import { Withdrawal } from '../crypto-donation/entities/withdrawal.entity';
 
 @Controller('admin/withdrawals')
 @ApiTags('admin-withdrawals')
@@ -26,6 +27,14 @@ export class AdminWithdrawalController {
     @InjectQueue(WITHDRAWAL_QUEUE_NAME)
     private readonly withdrawalQueue: Queue<WithdrawalJobPayload>,
   ) {}
+
+  @Get()
+  @ApiOperation({ summary: 'List all withdrawals (admin)' })
+  @ApiResponse({ status: 200, description: 'List of withdrawals with user info' })
+  async list() {
+    const list = await this.withdrawalService.findAll();
+    return list.map((w) => this.toResponse(w));
+  }
 
   @Patch(':id/approve')
   @ApiOperation({ summary: 'Approve pending withdrawal and enqueue transfer' })
@@ -63,6 +72,23 @@ export class AdminWithdrawalController {
       id: withdrawal.id,
       status: withdrawal.status,
       message: 'Withdrawal rejected, balance returned to user',
+    };
+  }
+
+  private toResponse(w: Withdrawal) {
+    return {
+      id: w.id,
+      amount: parseFloat(w.amount),
+      walletAddress: w.walletAddress,
+      status: w.status,
+      txHash: w.txHash ?? undefined,
+      failureReason: w.failureReason ?? undefined,
+      createdAt: w.createdAt.toISOString(),
+      processedAt: w.processedAt?.toISOString(),
+      userId: w.userId,
+      user: w.user
+        ? { id: w.user.id, name: w.user.name, email: w.user.email }
+        : undefined,
     };
   }
 }

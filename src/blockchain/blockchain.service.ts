@@ -75,6 +75,7 @@ export class BlockchainService {
       params.contract_address = options.contract_address;
 
     const url = `/accounts/${address}/transactions/trc20`;
+    this.logger.debug(`Fetching TRC20 transactions for ${address}: ${JSON.stringify(params)}`);
     const { data } = await this.http.get<Trc20TransactionsResponse>(url, {
       params,
     });
@@ -127,7 +128,7 @@ export class BlockchainService {
       block_header?: { raw_data?: { number?: number } };
       number?: number;
     }>(url);
-    this.logger.debug(data);
+    this.logger.debug(`Latest block number: ${data?.block_header?.raw_data?.number ?? (data as any)?.number ?? 0}`);
     return (
       data?.block_header?.raw_data?.number ??
       (data as any)?.number ??

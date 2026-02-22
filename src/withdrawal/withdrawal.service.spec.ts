@@ -375,5 +375,17 @@ describe('WithdrawalService', () => {
       });
       expect(result).toHaveLength(1);
     });
+
+    it('findAll returns all withdrawals with user relation, newest first', async () => {
+      (withdrawalRepo.find as jest.Mock).mockResolvedValue([mockWithdrawal]);
+
+      const result = await service.findAll();
+
+      expect(withdrawalRepo.find).toHaveBeenCalledWith({
+        relations: ['user'],
+        order: { createdAt: 'DESC' },
+      });
+      expect(result).toHaveLength(1);
+    });
   });
 });

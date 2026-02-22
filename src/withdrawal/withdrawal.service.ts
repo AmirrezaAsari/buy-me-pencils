@@ -307,4 +307,12 @@ export class WithdrawalService {
       order: { createdAt: 'DESC' },
     });
   }
+
+  /** Admin: list all withdrawals with user relation, newest first. */
+  async findAll(): Promise<Withdrawal[]> {
+    return this.withdrawalRepo.find({
+      relations: ['user'],
+      order: { createdAt: 'DESC' },
+    });
+  }
 }

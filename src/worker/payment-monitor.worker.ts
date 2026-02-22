@@ -77,9 +77,10 @@ export class PaymentMonitorWorker {
       payment.address,
       minTimestamp,
     );
+    this.logger.debug(`Transfers: ${transfers.map((t) => t.transaction_id).join(', ')}`);
 
     if (transfers.length === 0) return;
-    this.logger.debug(`Found ${transfers.length} transfers for payment ${payment.id}`, transfers);
+    this.logger.debug(`Found ${transfers.length} transfers for payment ${payment.id}: ${transfers.map((t) => t.transaction_id).join(', ')}`);
 
     // Find transfer that matches: toAddress, amount >= expected
     const expectedRaw = BigInt(payment.amountExpected);

@@ -24,6 +24,7 @@ describe('AdminWithdrawalController', () => {
     };
 
     const mockWithdrawalService = {
+      findAll: jest.fn(),
       approveWithdrawal: jest.fn(),
       rejectWithdrawal: jest.fn(),
     };
@@ -48,6 +49,37 @@ describe('AdminWithdrawalController', () => {
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
+  });
+
+  describe('list', () => {
+    it('returns all withdrawals with user info', async () => {
+      const withdrawalWithUser = {
+        id: 'wd-1',
+        amount: '10.5',
+        walletAddress: 'TXYZ',
+        status: WithdrawalStatus.PENDING,
+        txHash: null,
+        failureReason: null,
+        createdAt: new Date(),
+        processedAt: null,
+        userId: 'user-1',
+        user: { id: 'user-1', name: 'Creator', email: 'c@test.com' },
+      };
+      (withdrawalService.findAll as jest.Mock).mockResolvedValue([
+        withdrawalWithUser,
+      ]);
+
+      const result = await controller.list();
+
+      expect(withdrawalService.findAll).toHaveBeenCalled();
+      expect(result).toHaveLength(1);
+      expect(result[0]).toMatchObject({
+        id: 'wd-1',
+        amount: 10.5,
+        status: WithdrawalStatus.PENDING,
+        user: { id: 'user-1', name: 'Creator', email: 'c@test.com' },
+      });
+    });
   });
 
   describe('approve', () => {
