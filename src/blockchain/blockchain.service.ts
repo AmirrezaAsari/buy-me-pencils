@@ -101,6 +101,7 @@ export class BlockchainService {
       contract_address: USDT_TRC20_CONTRACT,
       min_timestamp: minTimestamp,
     });
+    this.logger.debug(`Incoming USDT transfers: ${JSON.stringify(all)}`);
     return all.filter((t) => t.to_address === toAddress);
   }
 

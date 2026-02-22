@@ -85,9 +85,11 @@ export class SweepService {
     try {
       // 1. Send TRX for energy
       await this.sendTrxForEnergy(payment.address, TRX_FOR_ENERGY);
+      this.logger.debug(`Sent TRX for energy to ${payment.address}`);
 
       // 2. Transfer USDT to master
       await this.transferUsdtToMaster(payment.address, privateKey);
+      this.logger.debug(`Transfered USDT to master from ${payment.address} to ${this.masterAddress}`);
     } catch (err) {
       this.logger.error(
         `Sweep failed for payment ${payment.id}: ${(err as Error).message}`,
@@ -124,7 +126,7 @@ export class SweepService {
       fullHost: this.fullHost,
       privateKey: fromPrivateKey,
     });
-
+    this.logger.debug(`Transfer USDT to master from ${fromAddress} to ${this.masterAddress}`);
     const contract = await tronWeb.contract().at(USDT_TRC20);
     const balance = await contract.balanceOf(fromAddress).call();
     const balanceStr = balance.toString();
