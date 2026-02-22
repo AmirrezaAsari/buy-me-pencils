@@ -26,7 +26,7 @@ export class WalletService {
   ) {
     this.fullHost = this.configService.get<string>(
       'TRON_FULL_HOST',
-      'https://api.trongrid.io',
+      'https://nile.trongrid.io',
     );
     // TronWeb without private key - we only use it for createAccount
     this.tronWeb = new TronWeb({

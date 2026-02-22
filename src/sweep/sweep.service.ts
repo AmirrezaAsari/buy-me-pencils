@@ -33,7 +33,7 @@ export class SweepService {
     this.masterPrivateKey = this.configService.get<string>('TRON_MASTER_PRIVATE_KEY') ?? '';
     this.fullHost = this.configService.get<string>(
       'TRON_FULL_HOST',
-      'https://api.trongrid.io',
+      'https://nile.trongrid.io',
     );
   }
 

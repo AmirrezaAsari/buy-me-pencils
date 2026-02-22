@@ -19,7 +19,7 @@ export class TronTransferService {
 
   constructor(private readonly configService: ConfigService) {
     this.fullHost =
-      this.configService.get<string>('TRON_FULL_HOST', 'https://api.trongrid.io') ?? '';
+      this.configService.get<string>('TRON_FULL_HOST', 'https://nile.trongrid.io') ?? '';
     this.usdtContract =
       this.configService.get<string>('TRON_USDT_CONTRACT', DEFAULT_USDT_CONTRACT) ?? DEFAULT_USDT_CONTRACT;
   }

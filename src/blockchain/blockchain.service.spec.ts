@@ -7,7 +7,7 @@ describe('BlockchainService', () => {
 
   const mockConfigService = {
     get: jest.fn((key: string, defaultValue?: string) => {
-      if (key === 'TRON_FULL_HOST') return 'https://api.trongrid.io';
+      if (key === 'TRON_FULL_HOST') return 'https://nile.trongrid.io';
       return defaultValue;
     }),
   };

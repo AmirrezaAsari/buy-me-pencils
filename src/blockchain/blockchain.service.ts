@@ -42,7 +42,7 @@ export class BlockchainService {
 
   constructor(private readonly configService: ConfigService) {
     this.baseUrl =
-      this.configService.get<string>('TRON_FULL_HOST', 'https://api.trongrid.io') +
+      this.configService.get<string>('TRON_FULL_HOST', 'https://nile.trongrid.io') +
       '/v1';
     this.http = axios.create({
       baseURL: this.baseUrl,
@@ -101,7 +101,7 @@ export class BlockchainService {
       contract_address: USDT_TRC20_CONTRACT,
       min_timestamp: minTimestamp,
     });
-    this.logger.debug(`Incoming USDT transfers: ${JSON.stringify(all)}`);
+
     return all.filter((t) => t.to_address === toAddress);
   }
 

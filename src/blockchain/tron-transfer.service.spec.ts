@@ -10,10 +10,10 @@ describe('TronTransferService', () => {
     const mockConfigService = {
       get: jest.fn((key: string, defaultVal?: string) => {
         const env: Record<string, string> = {
-          TRON_FULL_HOST: 'https://api.trongrid.io',
-          TRON_MASTER_ADDRESS: 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t',
+          TRON_FULL_HOST: 'https://nile.trongrid.io',
+          TRON_MASTER_ADDRESS: 'TVDykcqEFnmxDanPDx2Lee9FL6c8nFqEqG',
           TRON_MASTER_PRIVATE_KEY: 'mock-private-key',
-          TRON_USDT_CONTRACT: 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t',
+          TRON_USDT_CONTRACT: 'TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs',
         };
         return env[key] ?? defaultVal;
       }),
