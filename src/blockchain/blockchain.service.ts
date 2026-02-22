@@ -3,7 +3,9 @@ import { ConfigService } from '@nestjs/config';
 import axios, { AxiosInstance } from 'axios';
 
 /** USDT TRC20 contract address on mainnet */
-const USDT_TRC20_CONTRACT = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t';
+// testnet Nile: TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs
+// mainnet: TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t
+const USDT_TRC20_CONTRACT = 'TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs';
 
 export interface Trc20Transfer {
   transaction_id: string;
