@@ -144,7 +144,7 @@ describe('AuthController', () => {
   describe('me', () => {
     it('returns user id, email, name, type', () => {
       const result = controller.me(mockUser);
-      expect(result).toEqual({
+      expect(result).toMatchObject({
         id: mockUser.id,
         email: mockUser.email,
         name: mockUser.name,

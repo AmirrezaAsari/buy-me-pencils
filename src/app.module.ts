@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { BullModule } from '@nestjs/bullmq';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
@@ -13,12 +14,23 @@ import { WalletModule } from './wallet/wallet.module';
 import { BlockchainModule } from './blockchain/blockchain.module';
 import { SweepModule } from './sweep/sweep.module';
 import { WorkerModule } from './worker/worker.module';
+import { WithdrawalModule } from './withdrawal/withdrawal.module';
 import { UsersController } from './users/users.controller';
 import { PaymentController } from './payments/payment.controller';
 import { AuthController } from './auth/auth.controller';
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    BullModule.forRootAsync({
+      useFactory: (config: ConfigService) => ({
+        connection: {
+          host: config.get<string>('REDIS_HOST', 'localhost'),
+          port: config.get<number>('REDIS_PORT', 6379),
+        },
+      }),
+      inject: [ConfigService],
+    }),
     DatabaseModule,
     CryptoModule,
     AuthModule,
@@ -29,6 +41,7 @@ import { AuthController } from './auth/auth.controller';
     BlockchainModule,
     SweepModule,
     WorkerModule,
+    WithdrawalModule,
     CardInfoModule,
   ],
   controllers: [

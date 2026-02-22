@@ -5,6 +5,7 @@ import { NotFoundException } from '@nestjs/common';
 import { CryptoPaymentService } from './crypto-payment.service';
 import { CryptoPayment } from './entities/crypto-payment.entity';
 import { CryptoTransaction } from './entities/crypto-transaction.entity';
+import { UserBalanceRecord } from './entities/user-balance-record.entity';
 import { User } from '../users/user.entity';
 import { WalletService } from '../wallet/wallet.service';
 import { CryptoPaymentStatus } from './entities/crypto-payment-status.enum';
@@ -57,6 +58,10 @@ describe('CryptoPaymentService', () => {
       update: jest.fn(),
     };
 
+    const mockBalanceRecordRepo = {
+      save: jest.fn(),
+    };
+
     walletService = {
       generateWallet: jest.fn().mockResolvedValue({
         address: 'TNewAddress',
@@ -70,6 +75,7 @@ describe('CryptoPaymentService', () => {
         CryptoPaymentService,
         { provide: getRepositoryToken(CryptoPayment), useValue: mockPaymentRepo },
         { provide: getRepositoryToken(CryptoTransaction), useValue: mockTxRepo },
+        { provide: getRepositoryToken(UserBalanceRecord), useValue: mockBalanceRecordRepo },
         { provide: getRepositoryToken(User), useValue: mockUserRepo },
         { provide: WalletService, useValue: walletService },
       ],

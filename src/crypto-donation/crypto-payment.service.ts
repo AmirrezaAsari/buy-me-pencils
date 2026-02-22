@@ -80,6 +80,7 @@ export class CryptoPaymentService {
       address: saved.address,
       amountCrypto: amountCrypto,
       currency: 'USDT',
+      network: 'TRON (TRC20)',
       expiresAt: saved.expiresAt.toISOString(),
     };
   }
