@@ -81,6 +81,7 @@ export class BlockchainService {
     const { data } = await this.http.get<Trc20TransactionsResponse>(url, {
       params,
     });
+    this.logger.debug(`TRC20 transactions: ${JSON.stringify(data)}`);
 
     if (!data.success || !data.data) {
       throw new Error(data.error || 'Failed to fetch TRC20 transactions');
