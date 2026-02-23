@@ -70,7 +70,6 @@ export class BlockchainService {
   ): Promise<Trc20Transfer[]> {
     const params: Record<string, string | number | boolean> = {
       limit: options?.limit ?? 50,
-      only_confirmed: true,
     };
     if (options?.min_timestamp) params.min_timestamp = options.min_timestamp;
     if (options?.contract_address)
@@ -97,10 +96,7 @@ export class BlockchainService {
     toAddress: string,
     minTimestamp?: number,
   ): Promise<Trc20Transfer[]> {
-    const all = await this.getTrc20Transactions(toAddress, {
-      contract_address: USDT_TRC20_CONTRACT,
-      min_timestamp: minTimestamp,
-    });
+    const all = await this.getTrc20Transactions(toAddress);
 
     return all.filter((t) => t.to_address === toAddress);
   }
