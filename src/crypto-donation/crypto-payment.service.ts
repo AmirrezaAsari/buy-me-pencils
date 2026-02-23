@@ -50,7 +50,9 @@ export class CryptoPaymentService {
 
     // 2. Convert USD → USDT (1:1 for now)
     const amountUsdt = dto.amountUSD;
+    this.logger.log(`Amount USD: ${amountUsdt}`);
     const amountCrypto = BlockchainService.usdtToRaw(amountUsdt);
+    this.logger.log(`Amount Crypto: ${amountCrypto}`);
 
     // 3. Generate TRON wallet using TronWeb
     const wallet = await this.walletService.generateWallet();
