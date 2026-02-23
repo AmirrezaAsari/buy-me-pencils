@@ -96,11 +96,12 @@ export class PaymentMonitorWorker {
       const fractionPadded = fraction.padEnd(Number(decimals), "0").slice(0, Number(decimals));
     
       return BigInt(whole) * 10n ** decimals + BigInt(fractionPadded);
-    })();    for (const tx of transfers) {
+    })();    
+    for (const tx of transfers) {
       this.logger.debug(`Processing transfer ${tx.transaction_id} from ${tx.from} to ${tx.to} with amount ${tx.value}`);
       if (tx.to !== payment.address) continue;
       const amountRaw = BigInt(Math.floor(Number(tx.value)));
-      this.logger.debug(`Amount raw: ${amountRaw}`);
+      this.logger.debug(tx);
       if (amountRaw < expectedRaw) continue;
 
       const confirmations = latestBlock - tx.block + 1;
