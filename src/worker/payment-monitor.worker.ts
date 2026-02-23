@@ -100,7 +100,7 @@ export class PaymentMonitorWorker {
       }
 
       // const confirmations = latestBlock - tx.block + 1;
-      const confirmations = 1; 
+      const confirmations = 20; 
       /**
        * TODO: remove this and add real block confirmations check using the tongird apis 
        * for now, we are using a fixed value of 1 confirmation
