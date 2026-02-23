@@ -85,7 +85,7 @@ export class PaymentMonitorWorker {
     // Find transfer that matches: toAddress, amount >= expected
     const expectedRaw = BigInt(payment.amountExpected);
     for (const tx of transfers) {
-      if (tx.to_address !== payment.address) continue;
+      if (tx.to !== payment.address) continue;
       const amountRaw = BigInt(tx.value);
       if (amountRaw < expectedRaw) continue;
 
@@ -102,7 +102,7 @@ export class PaymentMonitorWorker {
         payment.id,
         tx.transaction_id,
         confirmations,
-        tx.from_address,
+        tx.from,
         tx.value,
       );
       return; // One matching tx per payment

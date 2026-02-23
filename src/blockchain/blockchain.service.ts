@@ -10,8 +10,8 @@ const USDT_TRC20_CONTRACT = 'TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs';
 export interface Trc20Transfer {
   transaction_id: string;
   token_info: { symbol: string; address: string };
-  from_address: string;
-  to_address: string;
+  from: string;
+  to: string;
   value: string; // Raw value (6 decimals for USDT)
   block_timestamp: number;
   block: number;
@@ -97,8 +97,8 @@ export class BlockchainService {
     minTimestamp?: number,
   ): Promise<Trc20Transfer[]> {
     const all = await this.getTrc20Transactions(toAddress);
-
-    return all.filter((t) => t.to_address === toAddress);
+    this.logger.debug(`Incoming USDT transfers: ${JSON.stringify(all)}`);
+    return all.filter((t) => t.to === toAddress);
   }
 
   /**

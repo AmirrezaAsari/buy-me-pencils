@@ -7,7 +7,7 @@ import { CryptoPayment } from '../crypto-donation/entities/crypto-payment.entity
 import { CryptoPaymentStatus } from '../crypto-donation/entities/crypto-payment-status.enum';
 import { WalletService } from '../wallet/wallet.service';
 
-const USDT_TRC20 = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t';
+const USDT_TRC20 = 'TVDykcqEFnmxDanPDx2Lee9FL6c8nFqEqG';
 /** TRX amount to send for energy (enough for one USDT transfer) */
 const TRX_FOR_ENERGY = 15;
 
