@@ -84,8 +84,6 @@ export class PaymentMonitorWorker {
 
     // Find transfer that matches: toAddress, amount >= expected
     // tx.value can be string with decimals (e.g. "50000000.000000") from TronGrid; BigInt requires integer
-    this.logger.log(payment);
-
     // convert decimal string to raw BigInt
     const decimals = 6n; // USDT TRC20 has 6 decimals
     const expectedRaw = (() => {
@@ -99,10 +97,15 @@ export class PaymentMonitorWorker {
     })();    
     for (const tx of transfers) {
       this.logger.debug(`Processing transfer ${tx.transaction_id} from ${tx.from} to ${tx.to} with amount ${tx.value}`);
-      if (tx.to !== payment.address) continue;
+      if (tx.to !== payment.address) {
+        this.logger.debug(`Transfer ${tx.transaction_id} to ${tx.to} is not for payment ${payment.id}`);
+      }
       const amountRaw = BigInt(Math.floor(Number(tx.value)));
       this.logger.debug(tx);
-      if (amountRaw < expectedRaw) continue;
+      if (amountRaw < expectedRaw) {
+        this.logger.debug(`Transfer ${tx.transaction_id} amount ${amountRaw} is less than expected ${expectedRaw}`);
+        continue;
+      }
 
       const confirmations = latestBlock - tx.block + 1;
       if (confirmations < MIN_CONFIRMATIONS) {
@@ -122,6 +125,7 @@ export class PaymentMonitorWorker {
         tx.from,
         amountStr,
       );
+      this.logger.debug(`Confirmed payment ${payment.id} with tx ${tx.transaction_id} with amount ${amountStr}`);
       return; // One matching tx per payment
     }
   }
