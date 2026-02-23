@@ -55,7 +55,7 @@ export class PaymentMonitorWorker {
     this.logger.debug(`Latest block: ${latestBlock}`);
     this.logger.debug(`Pending payments: ${pending.length}`);
     for (const payment of pending) {
-      this.logger.debug(`Processing payment ${payment.id}`);
+      this.logger.debug(`Processing payment ${payment.id}, latest block: ${latestBlock}`);
       try {
         await this.processOnePayment(payment, latestBlock);
       } catch (err) {
@@ -99,7 +99,14 @@ export class PaymentMonitorWorker {
         continue;
       }
 
-      const confirmations = latestBlock - tx.block + 1;
+      // const confirmations = latestBlock - tx.block + 1;
+      const confirmations = 1; 
+      /**
+       * TODO: remove this and add real block confirmations check using the tongird apis 
+       * for now, we are using a fixed value of 1 confirmation
+       * we should get the blockNumber by transaction_id using the tongird apis
+       * */
+
       if (confirmations < MIN_CONFIRMATIONS) {
         this.logger.debug(
           `Payment ${payment.id} tx ${tx.transaction_id} has ${confirmations} confirmations, need ${MIN_CONFIRMATIONS}`,
