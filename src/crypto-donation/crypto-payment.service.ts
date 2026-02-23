@@ -74,7 +74,7 @@ export class CryptoPaymentService {
 
     const saved = await this.paymentRepo.save(payment);
     this.logger.log(
-      `Created crypto payment ${saved.id} for creator ${dto.creatorId}, address=${wallet.address}`,
+      `Created crypto payment ${saved.id} for creator ${dto.creatorId}, address=${wallet.address}, amountExpected=${saved.amountExpected}`,
     );
 
     return {
