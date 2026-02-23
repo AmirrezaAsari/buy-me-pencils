@@ -85,8 +85,10 @@ export class PaymentMonitorWorker {
     // Find transfer that matches: toAddress, amount >= expected
     const expectedRaw = BigInt(payment.amountExpected);
     for (const tx of transfers) {
+      this.logger.debug(`Processing transfer ${tx.transaction_id} from ${tx.from} to ${tx.to} with amount ${tx.value}`);
       if (tx.to !== payment.address) continue;
       const amountRaw = BigInt(tx.value);
+      this.logger.debug(`Amount raw: ${amountRaw}`);
       if (amountRaw < expectedRaw) continue;
 
       const confirmations = latestBlock - tx.block + 1;
