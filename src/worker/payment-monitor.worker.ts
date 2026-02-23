@@ -84,6 +84,7 @@ export class PaymentMonitorWorker {
 
     // Find transfer that matches: toAddress, amount >= expected
     // tx.value can be string with decimals (e.g. "50000000.000000") from TronGrid; BigInt requires integer
+    this.logger.log(payment);
     const expectedRaw = BigInt(payment.amountExpected);
     for (const tx of transfers) {
       this.logger.debug(`Processing transfer ${tx.transaction_id} from ${tx.from} to ${tx.to} with amount ${tx.value}`);
