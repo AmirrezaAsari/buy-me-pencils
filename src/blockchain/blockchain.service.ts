@@ -148,7 +148,7 @@ export class BlockchainService {
    * Convert USDT amount to raw (6 decimals).
    */
   static usdtToRaw(amount: number | string): string {
-    const num = typeof amount === 'string' ? parseFloat(amount) : amount;
+    const num = typeof amount === 'string' ? Number(amount) : amount;
     return Math.floor(num * 1_000_000).toString();
   }
 }

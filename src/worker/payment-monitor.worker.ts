@@ -83,11 +83,12 @@ export class PaymentMonitorWorker {
     this.logger.debug(`Found ${transfers.length} transfers for payment ${payment.id}: ${transfers.map((t) => t.transaction_id).join(', ')}`);
 
     // Find transfer that matches: toAddress, amount >= expected
+    // tx.value can be string with decimals (e.g. "50000000.000000") from TronGrid; BigInt requires integer
     const expectedRaw = BigInt(payment.amountExpected);
     for (const tx of transfers) {
       this.logger.debug(`Processing transfer ${tx.transaction_id} from ${tx.from} to ${tx.to} with amount ${tx.value}`);
       if (tx.to !== payment.address) continue;
-      const amountRaw = BigInt(tx.value);
+      const amountRaw = BigInt(Math.floor(Number(tx.value)));
       this.logger.debug(`Amount raw: ${amountRaw}`);
       if (amountRaw < expectedRaw) continue;
 
@@ -100,12 +101,14 @@ export class PaymentMonitorWorker {
       }
 
       // Confirm payment (idempotent - checks txHash uniqueness)
+      // Use integer string so DB and rawToUsdt get a valid raw value
+      const amountStr = String(Math.floor(Number(tx.value)));
       await this.cryptoPaymentService.confirmPayment(
         payment.id,
         tx.transaction_id,
         confirmations,
         tx.from,
-        tx.value,
+        amountStr,
       );
       return; // One matching tx per payment
     }
