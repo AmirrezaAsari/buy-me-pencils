@@ -36,7 +36,7 @@ export class CryptoPayment {
   privateKeyEncrypted: string;
 
   /** Expected amount in USDT (6 decimals for TRC20) */
-  @Column({ type: 'decimal', precision: 24})
+  @Column({ type: 'decimal', precision: 24, scale: 6})
   amountExpected: string;
 
   @Column({ type: 'varchar', length: 10, default: 'USDT' })
