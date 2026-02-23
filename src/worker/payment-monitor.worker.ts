@@ -86,15 +86,7 @@ export class PaymentMonitorWorker {
     // tx.value can be string with decimals (e.g. "50000000.000000") from TronGrid; BigInt requires integer
     // convert decimal string to raw BigInt
     const decimals = 6n; // USDT TRC20 has 6 decimals
-    const expectedRaw = (() => {
-      // split into whole and fractional parts
-      const [whole, fraction = "0"] = payment.amountExpected.split(".");
-    
-      // make sure fraction has exactly `decimals` digits
-      const fractionPadded = fraction.padEnd(Number(decimals), "0").slice(0, Number(decimals));
-    
-      return BigInt(whole) * 10n ** decimals + BigInt(fractionPadded);
-    })();    
+    const expectedRaw = BigInt(payment.amountExpected.split(".")[0]);
     for (const tx of transfers) {
       this.logger.debug(`Processing transfer ${tx.transaction_id} from ${tx.from} to ${tx.to} with amount ${tx.value}`);
       if (tx.to !== payment.address) {
