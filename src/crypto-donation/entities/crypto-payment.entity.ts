@@ -69,6 +69,10 @@ export class CryptoPayment {
   @Column({ type: 'timestamp', nullable: true })
   sweptAt: Date | null;
 
+  /** When TRX was sent to this payment address for energy (null = not sent yet). Used to avoid sending TRX again on retry when only USDT transfer failed. */
+  @Column({ type: 'timestamp', nullable: true })
+  energySentAt: Date | null;
+
   @OneToMany(() => CryptoTransaction, (tx) => tx.payment)
   transactions: CryptoTransaction[];
 }

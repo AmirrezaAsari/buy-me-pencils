@@ -9,7 +9,7 @@ import { WalletService } from '../wallet/wallet.service';
 
 const USDT_TRC20 = 'TVDykcqEFnmxDanPDx2Lee9FL6c8nFqEqG';
 /** TRX amount to send for energy (enough for one USDT transfer) */
-const TRX_FOR_ENERGY = 15;
+const TRX_FOR_ENERGY = 5;
 
 /**
  * Service for sweeping USDT from payment wallets to the master wallet.
@@ -74,18 +74,33 @@ export class SweepService {
 
   /**
    * Sweep USDT from a payment wallet to master.
-   * 1. Send TRX from master to payment address (for energy)
-   * 2. Transfer USDT from payment wallet to master
+   * - Checks USDT balance first (read-only); if 0, marks swept without sending TRX.
+   * - Sends TRX for energy only once per payment (tracked by energySentAt); on retry after USDT failure we only retry the USDT transfer.
    */
   async sweepPayment(payment: CryptoPayment): Promise<void> {
     const privateKey = this.walletService.decryptPrivateKey(
       payment.privateKeyEncrypted,
     );
 
+    // 0. Check USDT balance before spending any TRX (read-only call, no cost)
+    const usdtBalance = await this.getUsdtBalance(payment.address);
+    if (usdtBalance === 0n) {
+      this.logger.warn(`No USDT at ${payment.address}, marking as swept without sending TRX`);
+      payment.sweptAt = new Date();
+      await this.paymentRepo.save(payment);
+      return;
+    }
+
     try {
-      // 1. Send TRX for energy
-      await this.sendTrxForEnergy(payment.address, TRX_FOR_ENERGY);
-      this.logger.debug(`Sent TRX for energy to ${payment.address}`);
+      // 1. Send TRX for energy only if we haven't already (avoids draining master when USDT transfer fails and we retry)
+      if (!payment.energySentAt) {
+        await this.sendTrxForEnergy(payment.address, TRX_FOR_ENERGY);
+        this.logger.debug(`Sent TRX for energy to ${payment.address}`);
+        payment.energySentAt = new Date();
+        await this.paymentRepo.save(payment);
+      } else {
+        this.logger.debug(`TRX already sent for ${payment.address}, retrying USDT transfer only`);
+      }
 
       // 2. Transfer USDT to master
       await this.transferUsdtToMaster(payment.address, privateKey);
@@ -100,6 +115,15 @@ export class SweepService {
     payment.sweptAt = new Date();
     await this.paymentRepo.save(payment);
     this.logger.log(`Swept payment ${payment.id} to master wallet`);
+  }
+
+  /** Get USDT (TRC20) balance for an address (read-only, no TRX cost). */
+  private async getUsdtBalance(address: string): Promise<bigint> {
+    const tronWeb = this.getMasterTronWeb();
+    const contract = await tronWeb.contract().at(USDT_TRC20);
+    const balance = await contract.balanceOf(address).call();
+    const balanceStr = balance?.toString() ?? '0';
+    return BigInt(balanceStr);
   }
 
   /**
@@ -138,7 +162,7 @@ export class SweepService {
       fullHost: this.fullHost,
       privateKey: fromPrivateKey,
     });
-    this.logger.debug(`Transfer USDT to master from ${fromAddress} to ${this.masterAddress}`);
+    this.logger.debug(`Transfering USDT to master from ${fromAddress} to ${this.masterAddress}`);
     const contract = await tronWeb.contract().at(USDT_TRC20);
     const balance = await contract.balanceOf(fromAddress).call();
     const balanceStr = balance.toString();
