@@ -103,18 +103,47 @@ export class BlockchainService {
 
   /**
    * Get transaction info (block number, etc.) for confirmation count.
+   * Tries wallet/gettransactioninfobyid first (returns blockNumber); falls back to v1 /transactions/{id}.
    */
   async getTransactionInfo(txId: string): Promise<TransactionInfo | null> {
+    const base = this.baseUrl.replace('/v1', '');
+    try {
+      const { data } = await this.http.post<{
+        blockNumber?: number;
+        blockTimeStamp?: number;
+        id?: string;
+      }>(`${base}/wallet/gettransactioninfobyid`, { value: txId });
+      if (data && typeof data.blockNumber === 'number') {
+        return {
+          id: data.id ?? txId,
+          blockNumber: data.blockNumber,
+          blockTimestamp: data.blockTimeStamp ?? 0,
+        };
+      }
+    } catch (err) {
+      this.logger.debug(
+        `gettransactioninfobyid failed for ${txId}: ${(err as Error).message}`,
+      );
+    }
     try {
       const { data } = await this.http.get<{
-        id: string;
-        blockNumber: number;
-        blockTimestamp: number;
+        id?: string;
+        blockNumber?: number;
+        block?: number;
+        blockTimestamp?: number;
+        block_timestamp?: number;
       }>(`/transactions/${txId}`);
-      return data;
+      if (data && (typeof data.blockNumber === 'number' || typeof data.block === 'number')) {
+        return {
+          id: data.id ?? txId,
+          blockNumber: data.blockNumber ?? data.block ?? 0,
+          blockTimestamp: data.blockTimestamp ?? data.block_timestamp ?? 0,
+        };
+      }
     } catch {
       return null;
     }
+    return null;
   }
 
   /**

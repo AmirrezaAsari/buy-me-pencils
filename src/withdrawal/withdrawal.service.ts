@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, Repository, Not, IsNull } from 'typeorm';
 import { Withdrawal } from '../crypto-donation/entities/withdrawal.entity';
 import { WithdrawalStatus } from '../crypto-donation/entities/withdrawal-status.enum';
 import {
@@ -313,6 +313,16 @@ export class WithdrawalService {
     return this.withdrawalRepo.find({
       relations: ['user'],
       order: { createdAt: 'DESC' },
+    });
+  }
+
+  /** Find withdrawals in PROCESSING that have a txHash (for confirmation worker). */
+  async findProcessingWithTxHash(): Promise<Withdrawal[]> {
+    return this.withdrawalRepo.find({
+      where: {
+        status: WithdrawalStatus.PROCESSING,
+        txHash: Not(IsNull()),
+      },
     });
   }
 }
