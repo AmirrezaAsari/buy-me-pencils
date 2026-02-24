@@ -106,9 +106,21 @@ export class SweepService {
       await this.transferUsdtToMaster(payment.address, privateKey);
       this.logger.debug(`Transfered USDT to master from ${payment.address} to ${this.masterAddress}`);
     } catch (err) {
+      const errMsg = this.normalizeErrorMessage(err);
       this.logger.error(
-        `Sweep failed for payment ${payment.id}: ${(err as Error).message}`,
+        `Sweep failed for payment ${payment.id}: ${errMsg}`,
       );
+      if (err instanceof Error && err.stack) {
+        this.logger.debug(err.stack);
+      }
+      if (err != null && typeof err === 'object' && /Unknown error|\{\}/.test(errMsg)) {
+        const names = Object.getOwnPropertyNames(err);
+        const extra = names
+          .filter((k) => !['stack', 'message'].includes(k))
+          .map((k) => `${k}=${JSON.stringify((err as unknown as Record<string, unknown>)[k])}`)
+          .join(', ');
+        if (extra) this.logger.debug(`Error properties: ${extra}`);
+      }
       throw err;
     }
 
@@ -124,6 +136,40 @@ export class SweepService {
     const balance = await contract.balanceOf(address).call();
     const balanceStr = balance?.toString() ?? '0';
     return BigInt(balanceStr);
+  }
+
+  /**
+   * Build a readable error string from unknown thrown values (e.g. TronWeb errors that serialize as "Unknown error: {}").
+   */
+  private normalizeErrorMessage(err: unknown): string {
+    if (err instanceof Error) {
+      const parts = [err.message];
+      const anyErr = err as unknown as Record<string, unknown>;
+      if (anyErr.response != null) {
+        parts.push(`response: ${JSON.stringify(anyErr.response)}`);
+      }
+      if (anyErr.code != null) parts.push(`code: ${anyErr.code}`);
+      if (anyErr.transaction != null) parts.push(`transaction: ${JSON.stringify(anyErr.transaction)}`);
+      if (anyErr.error != null) parts.push(`error: ${JSON.stringify(anyErr.error)}`);
+      if (anyErr.body != null) parts.push(`body: ${JSON.stringify(anyErr.body)}`);
+      if (/^Unknown error/.test(err.message)) {
+        try {
+          const rest: Record<string, unknown> = {};
+          for (const k of Object.getOwnPropertyNames(anyErr)) {
+            if (!['message', 'stack', 'name'].includes(k)) {
+              rest[k] = (anyErr as Record<string, unknown>)[k];
+            }
+          }
+          if (Object.keys(rest).length > 0) {
+            parts.push(`details: ${JSON.stringify(rest)}`);
+          }
+        } catch {
+          // ignore
+        }
+      }
+      return parts.join(' | ');
+    }
+    return String(err);
   }
 
   /**
@@ -144,11 +190,16 @@ export class SweepService {
       );
     }
 
-    const tx = await tronWeb.trx.sendTransaction(toAddress, amountSun);
-    if (tx.result === false || tx.result === undefined) {
-      throw new Error(`TRX send failed: ${JSON.stringify(tx)}`);
+    try {
+      const tx = await tronWeb.trx.sendTransaction(toAddress, amountSun);
+      if (tx.result === false || tx.result === undefined) {
+        throw new Error(`TRX send failed: ${JSON.stringify(tx)}`);
+      }
+      return tx.txid || tx.transaction?.txID;
+    } catch (err) {
+      const msg = this.normalizeErrorMessage(err);
+      throw new Error(`TRX send failed: ${msg}`, { cause: err instanceof Error ? err : undefined });
     }
-    return tx.txid || tx.transaction?.txID;
   }
 
   /**
@@ -171,9 +222,14 @@ export class SweepService {
       return '';
     }
 
-    const txId = await contract
-      .transfer(this.masterAddress, balanceStr)
-      .send({ feeLimit: 100_000_000 });
-    return txId;
+    try {
+      const txId = await contract
+        .transfer(this.masterAddress, balanceStr)
+        .send({ feeLimit: 100_000_000 });
+      return txId;
+    } catch (err) {
+      const msg = this.normalizeErrorMessage(err);
+      throw new Error(`USDT transfer failed: ${msg}`, { cause: err instanceof Error ? err : undefined });
+    }
   }
 }
