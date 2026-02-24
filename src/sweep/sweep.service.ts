@@ -78,10 +78,11 @@ export class SweepService {
    * - Sends TRX for energy only once per payment (tracked by energySentAt); on retry after USDT failure we only retry the USDT transfer.
    */
   async sweepPayment(payment: CryptoPayment): Promise<void> {
+    this.logger.log(`Sweeping payment ${payment.id} (${payment.address})`);
     const privateKey = this.walletService.decryptPrivateKey(
       payment.privateKeyEncrypted,
     );
-    this.logger.debug(`Private key: ${privateKey}`);
+
     // 0. Check USDT balance before spending any TRX (read-only call, no cost)
     const usdtBalance = await this.getUsdtBalance(payment.address);
     if (usdtBalance === 0n) {
@@ -95,16 +96,16 @@ export class SweepService {
       // 1. Send TRX for energy only if we haven't already (avoids draining master when USDT transfer fails and we retry)
       if (!payment.energySentAt) {
         await this.sendTrxForEnergy(payment.address, TRX_FOR_ENERGY);
-        this.logger.debug(`Sent TRX for energy to ${payment.address}`);
+        this.logger.log(`Sent TRX for energy to ${payment.address}`);
         payment.energySentAt = new Date();
         await this.paymentRepo.save(payment);
       } else {
-        this.logger.debug(`TRX already sent for ${payment.address}, retrying USDT transfer only`);
+        this.logger.log(`TRX already sent for ${payment.address}, retrying USDT transfer only`);
       }
 
       // 2. Transfer USDT to master
       await this.transferUsdtToMaster(payment.address, privateKey);
-      this.logger.debug(`Transfered USDT to master from ${payment.address} to ${this.masterAddress}`);
+      this.logger.log(`Transferred USDT to master from ${payment.address}`);
     } catch (err) {
       const errMsg = this.normalizeErrorMessage(err);
       this.logger.error(

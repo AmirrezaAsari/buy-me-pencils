@@ -17,9 +17,8 @@ export class SweepWorker {
     try {
       if (!this.sweepService.isConfigured()) return;
       const unswept = await this.sweepService.getUnsweptPayments();
-      this.logger.debug(`Unswept payments: ${unswept.length}`);
+      this.logger.log(`Sweep run: ${unswept.length} unswept payment(s)`);
       for (const payment of unswept) {
-        this.logger.debug(`Sweeping payment ${payment.id}`);
         try {
           await this.sweepService.sweepPayment(payment);
         } catch (err) {
