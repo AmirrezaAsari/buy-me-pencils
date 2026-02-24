@@ -78,13 +78,29 @@ export class SweepService {
    * - Sends TRX for energy only once per payment (tracked by energySentAt); on retry after USDT failure we only retry the USDT transfer.
    */
   async sweepPayment(payment: CryptoPayment): Promise<void> {
-    this.logger.log(`Sweeping payment ${payment.id} (${payment.address})`);
-    const privateKey = this.walletService.decryptPrivateKey(
-      payment.privateKeyEncrypted,
-    );
+    this.logger.log(`Sweep starting for payment ${payment.id}`);
+
+    let privateKey: string;
+    try {
+      privateKey = this.walletService.decryptPrivateKey(
+        payment.privateKeyEncrypted,
+      );
+    } catch (err) {
+      const msg = this.normalizeErrorMessage(err);
+      this.logger.error(`Decrypt failed for payment ${payment.id}: ${msg}`);
+      throw err;
+    }
 
     // 0. Check USDT balance before spending any TRX (read-only call, no cost)
-    const usdtBalance = await this.getUsdtBalance(payment.address);
+    let usdtBalance: bigint;
+    try {
+      usdtBalance = await this.getUsdtBalance(payment.address);
+    } catch (err) {
+      const msg = this.normalizeErrorMessage(err);
+      this.logger.error(`Get USDT balance failed for payment ${payment.id}: ${msg}`);
+      throw err;
+    }
+
     if (usdtBalance === 0n) {
       this.logger.warn(`No USDT at ${payment.address}, marking as swept without sending TRX`);
       payment.sweptAt = new Date();
