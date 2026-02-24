@@ -7,7 +7,8 @@ import { CryptoPayment } from '../crypto-donation/entities/crypto-payment.entity
 import { CryptoPaymentStatus } from '../crypto-donation/entities/crypto-payment-status.enum';
 import { WalletService } from '../wallet/wallet.service';
 
-const USDT_TRC20 = 'TVDykcqEFnmxDanPDx2Lee9FL6c8nFqEqG';
+/** Nile testnet USDT contract; use TRON_USDT_CONTRACT env to override (e.g. mainnet: TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t) */
+const DEFAULT_USDT_TRC20 = 'TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs';
 /** TRX amount to send for energy (enough for one USDT transfer) */
 const TRX_FOR_ENERGY = 5;
 
@@ -21,6 +22,7 @@ export class SweepService {
   private readonly masterAddress: string;
   private readonly masterPrivateKey: string;
   private readonly fullHost: string;
+  private readonly usdtContractAddress: string;
   private masterTronWeb: TronWeb | null = null;
 
   constructor(
@@ -34,6 +36,10 @@ export class SweepService {
     this.fullHost = this.configService.get<string>(
       'TRON_FULL_HOST',
       'https://nile.trongrid.io',
+    );
+    this.usdtContractAddress = this.configService.get<string>(
+      'TRON_USDT_CONTRACT',
+      DEFAULT_USDT_TRC20,
     );
   }
 
@@ -149,7 +155,7 @@ export class SweepService {
   /** Get USDT (TRC20) balance for an address (read-only, no TRX cost). */
   private async getUsdtBalance(address: string): Promise<bigint> {
     const tronWeb = this.getMasterTronWeb();
-    const contract = await tronWeb.contract().at(USDT_TRC20);
+    const contract = await tronWeb.contract().at(this.usdtContractAddress);
     const balance = await contract.balanceOf(address).call();
     const balanceStr = balance?.toString() ?? '0';
     return BigInt(balanceStr);
@@ -231,7 +237,7 @@ export class SweepService {
       privateKey: fromPrivateKey,
     });
     this.logger.debug(`Transfering USDT to master from ${fromAddress} to ${this.masterAddress}`);
-    const contract = await tronWeb.contract().at(USDT_TRC20);
+    const contract = await tronWeb.contract().at(this.usdtContractAddress);
     const balance = await contract.balanceOf(fromAddress).call();
     const balanceStr = balance.toString();
     if (balanceStr === '0' || BigInt(balanceStr) <= 0n) {
