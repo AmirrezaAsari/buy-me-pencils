@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import { TronWeb } from 'tronweb';
 import { CryptoPayment } from '../crypto-donation/entities/crypto-payment.entity';
 import { CryptoPaymentStatus } from '../crypto-donation/entities/crypto-payment-status.enum';
@@ -73,7 +73,7 @@ export class SweepService {
     return this.paymentRepo.find({
       where: {
         status: CryptoPaymentStatus.CONFIRMED,
-        sweptAt: null as any,
+        sweptAt: IsNull(),
       },
     });
   }
