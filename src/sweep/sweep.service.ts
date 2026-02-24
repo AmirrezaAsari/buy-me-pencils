@@ -81,7 +81,7 @@ export class SweepService {
     const privateKey = this.walletService.decryptPrivateKey(
       payment.privateKeyEncrypted,
     );
-
+    this.logger.debug(`Private key: ${privateKey}`);
     // 0. Check USDT balance before spending any TRX (read-only call, no cost)
     const usdtBalance = await this.getUsdtBalance(payment.address);
     if (usdtBalance === 0n) {

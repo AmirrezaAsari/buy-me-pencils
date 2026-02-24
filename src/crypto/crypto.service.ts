@@ -69,6 +69,7 @@ export class CryptoService {
    * Decrypt ciphertext produced by encrypt().
    */
   decrypt(ciphertextBase64: string): string {
+    console.log(`Decrypting ciphertext: ${ciphertextBase64}`);
     const combined = Buffer.from(ciphertextBase64, 'base64');
     if (combined.length < SALT_LENGTH + IV_LENGTH + AUTH_TAG_LENGTH) {
       throw new Error('Invalid ciphertext: too short');
