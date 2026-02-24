@@ -93,7 +93,6 @@ export class PaymentMonitorWorker {
         this.logger.debug(`Transfer ${tx.transaction_id} to ${tx.to} is not for payment ${payment.id}`);
       }
       const amountRaw = BigInt(Math.floor(Number(tx.value)));
-      this.logger.debug(tx);
       if (amountRaw < expectedRaw) {
         this.logger.debug(`Transfer ${tx.transaction_id} amount ${amountRaw} is less than expected ${expectedRaw}`);
         continue;
@@ -117,8 +116,6 @@ export class PaymentMonitorWorker {
       // Confirm payment (idempotent - checks txHash uniqueness)
       // Use integer string so DB and rawToUsdt get a valid raw value
       const amountStr = String(Math.floor(Number(tx.value)));
-      this.logger.debug(confirmations);
-      this.logger.debug(typeof confirmations);
       await this.cryptoPaymentService.confirmPayment(
         payment.id,
         tx.transaction_id,
