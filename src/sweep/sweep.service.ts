@@ -104,10 +104,22 @@ export class SweepService {
 
   /**
    * Send TRX from master wallet to address (for energy/bandwidth).
+   * Fails fast with a clear error if master balance is insufficient.
    */
   private async sendTrxForEnergy(toAddress: string, amountTrx: number): Promise<string> {
     const tronWeb = this.getMasterTronWeb();
     const amountSun = amountTrx * 1_000_000; // TRX has 6 decimals
+
+    // Reserve some TRX for bandwidth (same tx consumes some); avoid "balance is not sufficient"
+    const reserveSun = 2 * 1_000_000; // 2 TRX reserve
+    const balanceSun = await tronWeb.trx.getBalance(this.masterAddress);
+    const balanceTrx = (balanceSun as number) / 1_000_000;
+    if (balanceSun < amountSun + reserveSun) {
+      throw new Error(
+        `Master wallet has insufficient TRX. Need at least ${amountTrx + 2} TRX (${amountTrx} for energy + 2 reserve). Current balance: ${balanceTrx.toFixed(2)} TRX. Top up TRON_MASTER_ADDRESS.`,
+      );
+    }
+
     const tx = await tronWeb.trx.sendTransaction(toAddress, amountSun);
     if (tx.result === false || tx.result === undefined) {
       throw new Error(`TRX send failed: ${JSON.stringify(tx)}`);
